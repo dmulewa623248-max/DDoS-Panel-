@@ -521,7 +521,7 @@ def create_repository(token, repo_name="soulcrack-tg"):
     except Exception as e:
         raise Exception(f"Failed to create repository: {e}")
 
-def (token, repo_name, ip, port, time_val, method):
+def create_workflow_content(token, repo_name, ip, port, time_val, method):
     yml_content = f"""name: soulcrack fucker
 on: [push]
 
