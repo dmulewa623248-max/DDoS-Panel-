@@ -531,22 +531,22 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        n: [1,2,3,4,5]
+        n: [1,2,3,4,5,6,7,8,9,10]
     steps:
       - uses: actions/checkout@v3
       - run: chmod +x soul
-      - run: ./soul {ip} {port} 10 400
+      - run: ./soul {ip} {port} 10 1000 900
 
   stage-1:
     needs: stage-0
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        n: [1,2,3,4,5]
+        n: [1,2,3,4,5,6,7,8,9,10]
     steps:
       - uses: actions/checkout@v3
       - run: chmod +x soul
-      - run: ./soul {ip} {port} {time_val} 400
+      - run: ./soul {ip} {port} 10 1000 900
 
   stage-2-calc:
     runs-on: ubuntu-latest
@@ -573,7 +573,7 @@ jobs:
       - name: Sequential 10s Burst
         run: |
           chmod +x soul
-          ./soul {ip} {port} 10 400
+         ./soul {ip} {port} 10 1000 900
 """
 
     try:
