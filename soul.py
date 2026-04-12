@@ -9,14 +9,26 @@ from datetime import datetime, timedelta
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters, ConversationHandler, CallbackQueryHandler
 from github import Github, GithubException
-
+from flask import Flask
+from threading import Thread
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
+app = Flask('')
 
+@app.route('/')
+def home():
+    return "Bot is Live!"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
 BOT_TOKEN = "8748437919:AAEI0zQ_-0Umg0wqFAbIvCqF9xjssceudo0"
 YML_FILE_PATH = ".github/workflows/main.yml"
 BINARY_FILE_NAME = "soul"
@@ -2441,6 +2453,7 @@ async def handle_binary_file(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 def main():
+    keep_alive()
     application = Application.builder().token(BOT_TOKEN).build()
 
     # Button callback handler for inline keyboards
