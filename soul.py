@@ -1750,7 +1750,7 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                 del user_attack_counts[user_to_remove_str]
                 save_user_attack_counts(user_attack_counts)
 
-    if removed:
+   if removed:
         reply_markup = get_main_keyboard(user_id)
         await update.message.reply_text(
             f"✅ **USER ACCESS REMOVED**\n"
@@ -1768,7 +1768,8 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                 chat_id=user_to_remove,
                 text="🚫 **YOUR ACCESS HAS BEEN REMOVED**\n━━━━━━━━━━━━━━━━━━━━━━\nYour access to the bot has been revoked."
             )
-        except:
+        except Exception as e:
+            print(f"Error sending message: {e}")
             pass
     else:
         await update.message.reply_text(f"❌ **USER NOT FOUND**\nUser ID `{user_to_remove}` not found.")
