@@ -787,26 +787,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = get_main_keyboard(user_id)
     await update.message.reply_text(message, reply_markup=reply_markup)
 
-
-
-
-async def (update: Update, context: ContextTypes.DEFAULT_TYPE):
+ 
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     text = update.message.text
 
-    
+    # Yahan se aapka purana menu logic shuru hoga
     if text == "« Back to Main Menu":
         await show_main_menu(update, user_id)
-
-    
     elif text == "🎯 Launch Attack":
         await launch_attack_start(update, context, user_id)
-    elif text == "📊 Check Status":
-        await check_status(update, user_id)
-    elif text == "🛑 Stop Attack":
-        await stop_attack_handler(update, context, user_id)
-    elif text == "🔐 My Access":
-        await my_access(update, user_id)
+
+  
 
 
     elif text == "👥 User Management":
