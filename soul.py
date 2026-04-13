@@ -1804,7 +1804,7 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE, 
 
         if str(new_owner_id) in owners:
           await update.message.reply_text("❌ This user is already an owner")
-            del temp_data[user_id]
+          del temp_data[user_id]
             return
 
         owners[str(new_owner_id)] = {
