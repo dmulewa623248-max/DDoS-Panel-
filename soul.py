@@ -1769,10 +1769,10 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                   text="🚫 **YOUR ACCESS HAS BEEN REMOVED**\n━━━━━━━━━━━━━━━━━━━━━━\nYour access to the bot has been revoked."
             )
             except Exception as e:
-              print(f"Error sending message: {e}")
-              pass
-        else:
-             await update.message.reply_text(f"❌ **USER NOT FOUND**\nUser ID `{user_to_remove}` not found.")
+                print(f"Error sending message: {e}")
+                pass
+    else:
+          await update.message.reply_text(f"❌ **USER NOT FOUND**\nUser ID `{user_to_remove}` not found.")
 
         except ValueError:
              await update.message.reply_text("❌ **INVALID USER ID**\nUser ID must be a number.\n\nPlease send a valid user ID:")
