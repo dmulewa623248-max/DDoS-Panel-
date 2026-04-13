@@ -787,9 +787,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = get_main_keyboard(user_id)
     await update.message.reply_text(message, reply_markup=reply_markup)
 
-    async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    text = update.message.text
+    async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE)
+         user_id = update.effective_user.id
+         text = update.message.text
 
     if text == "« Back to Main Menu":
         await show_main_menu(update, user_id)
