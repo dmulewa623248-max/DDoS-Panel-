@@ -787,20 +787,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = get_main_keyboard(user_id)
     await update.message.reply_text(message, reply_markup=reply_markup)
 
- 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     text = update.message.text
 
-    # Yahan se aapka purana menu logic shuru hoga
     if text == "« Back to Main Menu":
         await show_main_menu(update, user_id)
     elif text == "🎯 Launch Attack":
         await launch_attack_start(update, context, user_id)
-
-  
-
-
     elif text == "👥 User Management":
         await show_user_management(update, user_id)
     elif text == "➕ Add User":
@@ -1756,30 +1750,31 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                 del user_attack_counts[user_to_remove_str]
                 save_user_attack_counts(user_attack_counts)
 
-            if removed:
-                reply_markup = get_main_keyboard(user_id)
-                await update.message.reply_text(
-                    f"✅ **USER ACCESS REMOVED**\n"
-                    "━━━━━━━━━━━━━━━━━━━━━━\n"
-                    f"User ID: `{user_to_remove}`\n"
-                    f"Removed by: `{user_id}`",
-                    reply_markup=reply_markup
+           if removed:
+            reply_markup = get_main_keyboard(user_id)
+            await update.message.reply_text(
+                f"✅ **USER ACCESS REMOVED**\n"
+                "━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"User ID: `{user_to_remove}`\n"
+                f"Removed by: `{user_id}`",
+                reply_markup=reply_markup
+             )
+
+            if user_id in temp_data:
+                del temp_data[user_id]
+
+            try:
+                await context.bot.send_message(
+                    chat_id=user_to_remove,
+                    text="🚫 **YOUR ACCESS HAS BEEN REMOVED**\n━━━━━━━━━━━━━━━━━━━━━━\nYour access to the bot has been revoked."
                 )
-
-                try:
-                    await context.bot.send_message(
-                        chat_id=user_to_remove,
-                        text="🚫 **YOUR ACCESS HAS BEEN REMOVED**\n━━━━━━━━━━━━━━━━━━━━━━\nYour access to the bot has been revoked."
-                    )
-                except:
-                    pass
-            else:
-                await update.message.reply_text(f"❌ **USER NOT FOUND**\nUser ID `{user_to_remove}` not found.")
-
-            del temp_data[user_id]
+            except:
+                pass
+          else:
+            await update.message.reply_text(f"❌ **USER NOT FOUND**\nUser ID `{user_to_remove}` not found.")
 
         except ValueError:
-            await update.message.reply_text("❌ **INVALID USER ID**\nUser ID must be a number.\n\nPlease send a valid user ID:")
+             await update.message.reply_text("❌ **INVALID USER ID**\nUser ID must be a number.\n\nPlease send a valid user ID:")
 
     # Owner add flow
     elif step == "owner_add_id":
@@ -2459,7 +2454,7 @@ def main():
     application.add_handler(MessageHandler(filters.Document.ALL, handle_binary_file))
 
     # Text message handler for all button presses and text input
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ))
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     import requests
 
 def trigger_colab(target_ip, target_port, duration):
@@ -2468,6 +2463,7 @@ def trigger_colab(target_ip, target_port, duration):
         requests.get(f"{api_link}?host={target_ip}&port={target_port}&time={duration}", timeout=2)
     except:
         pass
+   
     print("🤖 **THE BOT IS RUNNING...**")
     print("━━━━━━━━━━━━━━━━━━━━━━")
     print(f"👑 Primary owners: {[uid for uid, info in owners.items() if info.get('is_primary', False)]}")
