@@ -1750,29 +1750,29 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                 del user_attack_counts[user_to_remove_str]
                 save_user_attack_counts(user_attack_counts)
 
-   if removed:
-        reply_markup = get_main_keyboard(user_id)
-        await update.message.reply_text(
-            f"✅ **USER ACCESS REMOVED**\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"User ID: `{user_to_remove}`\n"
-            f"Removed by: `{user_id}`",
-            reply_markup=reply_markup
-        )
-
-        if user_id in temp_data:
-            del temp_data[user_id]
-
-        try:
-            await context.bot.send_message(
-                chat_id=user_to_remove,
-                text="🚫 **YOUR ACCESS HAS BEEN REMOVED**\n━━━━━━━━━━━━━━━━━━━━━━\nYour access to the bot has been revoked."
+            if removed:
+               reply_markup = get_main_keyboard(user_id)
+               await update.message.reply_text(
+               f"✅ **USER ACCESS REMOVED**\n"
+               "━━━━━━━━━━━━━━━━━━━━━━\n"
+               f"User ID: `{user_to_remove}`\n"
+               f"Removed by: `{user_id}`",
+               reply_markup=reply_markup
             )
-        except Exception as e:
-            print(f"Error sending message: {e}")
-            pass
-    else:
-        await update.message.reply_text(f"❌ **USER NOT FOUND**\nUser ID `{user_to_remove}` not found.")
+
+          if user_id in temp_data:
+              del temp_data[user_id]
+
+            try:
+               await context.bot.send_message(
+                  chat_id=user_to_remove,
+                  text="🚫 **YOUR ACCESS HAS BEEN REMOVED**\n━━━━━━━━━━━━━━━━━━━━━━\nYour access to the bot has been revoked."
+            )
+            except Exception as e:
+              print(f"Error sending message: {e}")
+              pass
+        else:
+             await update.message.reply_text(f"❌ **USER NOT FOUND**\nUser ID `{user_to_remove}` not found.")
 
         except ValueError:
              await update.message.reply_text("❌ **INVALID USER ID**\nUser ID must be a number.\n\nPlease send a valid user ID:")
