@@ -1758,10 +1758,10 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                f"User ID: `{user_to_remove}`\n"
                f"Removed by: `{user_id}`",
                reply_markup=reply_markup
-             )
+              )
 
-              if user_id in temp_data:
-                  del temp_data[user_id]
+               if user_id in temp_data:
+                   del temp_data[user_id]
 
             try:
                await context.bot.send_message(
