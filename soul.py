@@ -1776,7 +1776,6 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE, 
 
     except ValueError:
         await update.message.reply_text("❌ **INVALID USER ID**\nUser ID must be a number.")
-
     # Owner add flow
     elif step == "owner_add_id":
         try:
